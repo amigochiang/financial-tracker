@@ -1,15 +1,12 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "../server/routes";
-import { serveStatic, log } from "../server/vite";
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
 
-// Create the Express app
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -37,47 +34,69 @@ app.use((req, res, next) => {
   next();
 });
 
-// Initialize the app
-let appInitialized = false;
+// Check if running in Vercel (serverless)
+const isVercel = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_VERSION;
 
-async function initializeApp() {
-  if (appInitialized) return;
-  
-  try {
-    // Register routes (without server parameter since we don't have HTTP server in serverless)
-    await registerRoutes(app);
+if (isVercel) {
+  // Serverless mode - export handler
+  let appInitialized = false;
+
+  async function initializeApp() {
+    if (appInitialized) return;
     
-    // Error handler
+    try {
+      await registerRoutes(app);
+      
+      app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+        const status = err.status || err.statusCode || 500;
+        const message = err.message || "Internal Server Error";
+        res.status(status).json({ message });
+        console.error('Server Error:', err);
+      });
+
+      serveStatic(app);
+      appInitialized = true;
+    } catch (error) {
+      console.error('Failed to initialize app:', error);
+      throw error;
+    }
+  }
+
+  // Export for Vercel
+  export default async function handler(req: any, res: any) {
+    try {
+      await initializeApp();
+      return app(req, res);
+    } catch (error) {
+      console.error('Handler error:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  }
+} else {
+  // Local development mode
+  (async () => {
+    const server = await registerRoutes(app);
+    
     app.use((err: any, req: Request, res: Response, next: NextFunction) => {
       const status = err.status || err.statusCode || 500;
       const message = err.message || "Internal Server Error";
       res.status(status).json({ message });
-      console.error('Server Error:', err);
+      throw err;
     });
 
-    // Serve static files in production
-    serveStatic(app);
-    
-    appInitialized = true;
-  } catch (error) {
-    console.error('Failed to initialize app:', error);
-    throw error;
-  }
-}
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
 
-// Vercel serverless function handler
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  try {
-    // Initialize app on first request
-    await initializeApp();
-    
-    // Handle the request with Express
-    return app(req as any, res as any);
-  } catch (error) {
-    console.error('Handler error:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
+    const port = parseInt(process.env.PORT || '5000', 10);
+    server.listen({
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      log(`serving on port ${port}`);
+    });
+  })();
 }
-    log(`serving on port ${port}`);
-  });
-})();
