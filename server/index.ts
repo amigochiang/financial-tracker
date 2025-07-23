@@ -1,11 +1,15 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { registerRoutes } from "../server/routes";
+import { serveStatic, log } from "../server/vite";
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+// Create the Express app
 const app = express();
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -24,48 +28,56 @@ app.use((req, res, next) => {
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";
       }
-
       log(logLine);
     }
   });
-
   next();
 });
 
-(async () => {
-  const server = await registerRoutes(app);
+// Initialize the app
+let appInitialized = false;
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+async function initializeApp() {
+  if (appInitialized) return;
+  
+  try {
+    // Register routes (without server parameter since we don't have HTTP server in serverless)
+    await registerRoutes(app);
+    
+    // Error handler
+    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      res.status(status).json({ message });
+      console.error('Server Error:', err);
+    });
 
-    res.status(status).json({ message });
-    throw err;
-  });
-
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
+    // Serve static files in production
     serveStatic(app);
+    
+    appInitialized = true;
+  } catch (error) {
+    console.error('Failed to initialize app:', error);
+    throw error;
   }
+}
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+// Vercel serverless function handler
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  try {
+    // Initialize app on first request
+    await initializeApp();
+    
+    // Handle the request with Express
+    return app(req as any, res as any);
+  } catch (error) {
+    console.error('Handler error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+}
     log(`serving on port ${port}`);
   });
 })();
