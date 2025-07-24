@@ -1,151 +1,222 @@
-import { pgTable, text, serial, integer, boolean, decimal, timestamp, jsonb } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+// Database schema definitions and types
+export interface User {
+  id: number;
+  username: string;
+  email?: string;
+  createdAt: Date;
+}
 
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-});
+export interface InsertUser {
+  username: string;
+  email?: string;
+}
 
-export const companies = pgTable("companies", {
-  id: serial("id").primaryKey(),
-  name: text("name").notNull(),
-  ticker: text("ticker").notNull().unique(),
-  sector: text("sector"),
-  currency: text("currency").notNull().default("USD"),
-  financials: jsonb("financials"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export interface Company {
+  id: number;
+  name: string;
+  ticker: string;
+  sector: string;
+  currency: string;
+  financials?: {
+    cashReserves?: number;
+    annualRevenue?: number;
+    annualProfit?: number;
+    productAnnualRevenue?: number;
+    annualGrossProfit?: number;
+  };
+  createdAt: Date;
+}
 
-export const portfolioPositions = pgTable("portfolio_positions", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  companyId: integer("company_id").references(() => companies.id),
-  shares: decimal("shares", { precision: 10, scale: 2 }).notNull(),
-  averageCost: decimal("average_cost", { precision: 10, scale: 2 }).notNull(),
-  purchaseCurrency: text("purchase_currency").notNull().default("USD"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export interface InsertCompany {
+  name: string;
+  ticker: string;
+  sector: string;
+  currency: string;
+  financials?: {
+    cashReserves?: number;
+    annualRevenue?: number;
+    annualProfit?: number;
+    productAnnualRevenue?: number;
+    annualGrossProfit?: number;
+  };
+}
 
-export const ceoProfiles = pgTable("ceo_profiles", {
-  id: serial("id").primaryKey(),
-  companyId: integer("company_id").references(() => companies.id),
-  name: text("name").notNull(),
-  title: text("title").notNull(),
-  tenure: integer("tenure"), // in years
-  religion: text("religion").notNull(), // Christian, Other Religion
-  strategy: text("strategy"),
-  leadership: text("leadership"),
-  photoUrl: text("photo_url"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export interface PortfolioPosition {
+  id: number;
+  userId: number;
+  companyId: number;
+  shares: string;
+  averageCost: string;
+  purchaseCurrency: string;
+  createdAt: Date;
+}
 
-export const aiRecommendations = pgTable("ai_recommendations", {
-  id: serial("id").primaryKey(),
-  companyId: integer("company_id").references(() => companies.id),
-  signal: text("signal").notNull(), // BUY, SELL, HOLD
-  confidence: decimal("confidence", { precision: 5, scale: 2 }).notNull(),
-  targetPrice: decimal("target_price", { precision: 10, scale: 2 }),
-  reasoning: text("reasoning"),
-  fxAdvantage: decimal("fx_advantage", { precision: 5, scale: 2 }),
-  optimalTiming: text("optimal_timing"),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export interface InsertPortfolioPosition {
+  userId: number;
+  companyId: number;
+  shares: string;
+  averageCost: string;
+  purchaseCurrency: string;
+}
 
-export const currencyRates = pgTable("currency_rates", {
-  id: serial("id").primaryKey(),
-  fromCurrency: text("from_currency").notNull(),
-  toCurrency: text("to_currency").notNull(),
-  rate: decimal("rate", { precision: 10, scale: 6 }).notNull(),
-  change: decimal("change", { precision: 5, scale: 4 }),
-  changePercent: decimal("change_percent", { precision: 5, scale: 2 }),
-  forecast24h: text("forecast_24h"),
-  volatilityRisk: text("volatility_risk"),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+export interface CEOProfile {
+  id: number;
+  companyId: number;
+  name: string;
+  title: string;
+  tenure: number;
+  religion: string;
+  strategy: string;
+  leadership: string;
+  photoUrl?: string;
+  createdAt: Date;
+}
 
-export const marketAlerts = pgTable("market_alerts", {
-  id: serial("id").primaryKey(),
-  type: text("type").notNull(), // BOND_ALERT, SENTIMENT, CRASH_WARNING
-  severity: text("severity").notNull(), // LOW, MEDIUM, HIGH
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export interface InsertCEOProfile {
+  companyId: number;
+  name: string;
+  title: string;
+  tenure: number;
+  religion: string;
+  strategy: string;
+  leadership: string;
+  photoUrl?: string;
+}
 
-export const newsArticles = pgTable("news_articles", {
-  id: serial("id").primaryKey(),
-  title: text("title").notNull(),
-  sentiment: text("sentiment").notNull(), // POSITIVE, NEGATIVE, NEUTRAL
-  impact: text("impact").notNull(), // LOW, MEDIUM, HIGH
-  companyId: integer("company_id").references(() => companies.id),
-  publishedAt: timestamp("published_at").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
+export interface AIRecommendation {
+  id: number;
+  companyId: number;
+  signal: "BUY" | "SELL" | "HOLD";
+  confidence: string;
+  targetPrice?: string;
+  reasoning: string;
+  fxAdvantage?: string;
+  optimalTiming?: string;
+  createdAt: Date;
+}
 
-// Insert schemas
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-});
+export interface InsertAIRecommendation {
+  companyId: number;
+  signal: "BUY" | "SELL" | "HOLD";
+  confidence: string;
+  targetPrice?: string;
+  reasoning: string;
+  fxAdvantage?: string;
+  optimalTiming?: string;
+}
 
-export const insertCompanySchema = createInsertSchema(companies).omit({
-  id: true,
-  createdAt: true,
-});
+export interface CurrencyRate {
+  id: number;
+  fromCurrency: string;
+  toCurrency: string;
+  rate: string;
+  change: string;
+  changePercent: string;
+  forecast24h?: string;
+  volatilityRisk?: string;
+  updatedAt: Date;
+}
 
-export const insertPortfolioPositionSchema = createInsertSchema(portfolioPositions).omit({
-  id: true,
-  createdAt: true,
-});
+export interface InsertCurrencyRate {
+  fromCurrency: string;
+  toCurrency: string;
+  rate: string;
+  change: string;
+  changePercent: string;
+  forecast24h?: string;
+  volatilityRisk?: string;
+}
 
-export const insertCEOProfileSchema = createInsertSchema(ceoProfiles).omit({
-  id: true,
-  createdAt: true,
-});
+export interface MarketAlert {
+  id: number;
+  type: string;
+  severity: "LOW" | "MEDIUM" | "HIGH";
+  title: string;
+  description: string;
+  isActive: boolean;
+  createdAt: Date;
+}
 
-export const insertAIRecommendationSchema = createInsertSchema(aiRecommendations).omit({
-  id: true,
-  createdAt: true,
-});
+export interface InsertMarketAlert {
+  type: string;
+  severity: "LOW" | "MEDIUM" | "HIGH";
+  title: string;
+  description: string;
+  isActive: boolean;
+}
 
-export const insertCurrencyRateSchema = createInsertSchema(currencyRates).omit({
-  id: true,
-  updatedAt: true,
-});
+export interface NewsArticle {
+  id: number;
+  title: string;
+  content: string;
+  source: string;
+  companyId?: number;
+  sentiment: "POSITIVE" | "NEGATIVE" | "NEUTRAL";
+  publishedAt: Date;
+  createdAt: Date;
+}
 
-export const insertMarketAlertSchema = createInsertSchema(marketAlerts).omit({
-  id: true,
-  createdAt: true,
-});
+export interface InsertNewsArticle {
+  title: string;
+  content: string;
+  source: string;
+  companyId?: number;
+  sentiment: "POSITIVE" | "NEGATIVE" | "NEUTRAL";
+  publishedAt: Date;
+}
 
-export const insertNewsArticleSchema = createInsertSchema(newsArticles).omit({
-  id: true,
-  createdAt: true,
-});
+// Schema validation (basic implementation without Zod)
+export const insertCompanySchema = {
+  parse: (data: any): InsertCompany => {
+    if (!data.name || !data.ticker || !data.sector || !data.currency) {
+      throw new Error("Missing required company fields");
+    }
+    return data as InsertCompany;
+  }
+};
 
-// Types
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
+export const insertPortfolioPositionSchema = {
+  parse: (data: any): InsertPortfolioPosition => {
+    if (!data.companyId || !data.shares || !data.averageCost || !data.purchaseCurrency) {
+      throw new Error("Missing required portfolio position fields");
+    }
+    return data as InsertPortfolioPosition;
+  }
+};
 
-export type InsertCompany = z.infer<typeof insertCompanySchema>;
-export type Company = typeof companies.$inferSelect;
+export const insertCEOProfileSchema = {
+  parse: (data: any): InsertCEOProfile => {
+    if (!data.companyId || !data.name || !data.title) {
+      throw new Error("Missing required CEO profile fields");
+    }
+    return data as InsertCEOProfile;
+  }
+};
 
-export type InsertPortfolioPosition = z.infer<typeof insertPortfolioPositionSchema>;
-export type PortfolioPosition = typeof portfolioPositions.$inferSelect;
+export const insertMarketAlertSchema = {
+  parse: (data: any): InsertMarketAlert => {
+    if (!data.type || !data.severity || !data.title || !data.description) {
+      throw new Error("Missing required market alert fields");
+    }
+    return data as InsertMarketAlert;
+  }
+};
 
-export type InsertCEOProfile = z.infer<typeof insertCEOProfileSchema>;
-export type CEOProfile = typeof ceoProfiles.$inferSelect;
+export const insertNewsArticleSchema = {
+  parse: (data: any): InsertNewsArticle => {
+    if (!data.title || !data.content || !data.source || !data.sentiment) {
+      throw new Error("Missing required news article fields");
+    }
+    return data as InsertNewsArticle;
+  }
+};
 
-export type InsertAIRecommendation = z.infer<typeof insertAIRecommendationSchema>;
-export type AIRecommendation = typeof aiRecommendations.$inferSelect;
-
-export type InsertCurrencyRate = z.infer<typeof insertCurrencyRateSchema>;
-export type CurrencyRate = typeof currencyRates.$inferSelect;
-
-export type InsertMarketAlert = z.infer<typeof insertMarketAlertSchema>;
-export type MarketAlert = typeof marketAlerts.$inferSelect;
-
-export type InsertNewsArticle = z.infer<typeof insertNewsArticleSchema>;
-export type NewsArticle = typeof newsArticles.$inferSelect;
+// Export placeholder objects to maintain compatibility
+export const users = {};
+export const companies = {};
+export const portfolioPositions = {};
+export const ceoProfiles = {};
+export const aiRecommendations = {};
+export const currencyRates = {};
+export const marketAlerts = {};
+export const newsArticles = {};
