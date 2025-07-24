@@ -34,69 +34,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// Check if running in Vercel (serverless)
-const isVercel = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_VERSION;
+// Local development mode
+(async () => {
+  const server = await registerRoutes(app);
+  
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    res.status(status).json({ message });
+    throw err;
+  });
 
-if (isVercel) {
-  // Serverless mode - export handler
-  let appInitialized = false;
-
-  async function initializeApp() {
-    if (appInitialized) return;
-    
-    try {
-      await registerRoutes(app);
-      
-      app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-        const status = err.status || err.statusCode || 500;
-        const message = err.message || "Internal Server Error";
-        res.status(status).json({ message });
-        console.error('Server Error:', err);
-      });
-
-      serveStatic(app);
-      appInitialized = true;
-    } catch (error) {
-      console.error('Failed to initialize app:', error);
-      throw error;
-    }
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
   }
 
-  // Export for Vercel
-  export default async function handler(req: any, res: any) {
-    try {
-      await initializeApp();
-      return app(req, res);
-    } catch (error) {
-      console.error('Handler error:', error);
-      res.status(500).json({ message: 'Internal Server Error' });
-    }
-  }
-} else {
-  // Local development mode
-  (async () => {
-    const server = await registerRoutes(app);
-    
-    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-      const status = err.status || err.statusCode || 500;
-      const message = err.message || "Internal Server Error";
-      res.status(status).json({ message });
-      throw err;
-    });
-
-    if (app.get("env") === "development") {
-      await setupVite(app, server);
-    } else {
-      serveStatic(app);
-    }
-
-    const port = parseInt(process.env.PORT || '5000', 10);
-    server.listen({
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    }, () => {
-      log(`serving on port ${port}`);
-    });
-  })();
-}
+  const port = parseInt(process.env.PORT || '5000', 10);
+  server.listen({
+    port,
+    host: "0.0.0.0",
+    reusePort: true,
+  }, () => {
+    log(`serving on port ${port}`);
+  });
+})();
