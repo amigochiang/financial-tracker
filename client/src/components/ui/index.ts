@@ -1,7 +1,7 @@
-// Button Component
 import * as React from "react"
 import { cn } from "../../lib/utils"
 
+// Button Component
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'default' | 'outline' | 'ghost' | 'destructive'
   size?: 'default' | 'sm' | 'lg'
@@ -9,23 +9,24 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'default', size = 'default', ...props }, ref) => {
+    const baseClasses = "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+    
+    const variantClasses = {
+      default: 'bg-primary text-primary-foreground hover:bg-primary/90',
+      outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+      ghost: 'hover:bg-accent hover:text-accent-foreground',
+      destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+    }
+    
+    const sizeClasses = {
+      default: 'h-10 px-4 py-2',
+      sm: 'h-9 rounded-md px-3',
+      lg: 'h-11 rounded-md px-8',
+    }
+
     return (
       <button
-        className={cn(
-          "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-          {
-            'bg-primary text-primary-foreground hover:bg-primary/90': variant === 'default',
-            'border border-input bg-background hover:bg-accent hover:text-accent-foreground': variant === 'outline',
-            'hover:bg-accent hover:text-accent-foreground': variant === 'ghost',
-            'bg-destructive text-destructive-foreground hover:bg-destructive/90': variant === 'destructive',
-          },
-          {
-            'h-10 px-4 py-2': size === 'default',
-            'h-9 rounded-md px-3': size === 'sm',
-            'h-11 rounded-md px-8': size === 'lg',
-          },
-          className
-        )}
+        className={cn(baseClasses, variantClasses[variant], sizeClasses[size], className)}
         ref={ref}
         {...props}
       />
@@ -68,17 +69,19 @@ interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
   ({ className, variant = 'default', ...props }, ref) => {
+    const variantClasses = {
+      default: 'border-transparent bg-primary text-primary-foreground hover:bg-primary/80',
+      secondary: 'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
+      destructive: 'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
+      outline: 'text-foreground',
+    }
+
     return (
       <div
         ref={ref}
         className={cn(
           "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-          {
-            'border-transparent bg-primary text-primary-foreground hover:bg-primary/80': variant === 'default',
-            'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80': variant === 'secondary',
-            'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80': variant === 'destructive',
-            'text-foreground': variant === 'outline',
-          },
+          variantClasses[variant],
           className
         )}
         {...props}
@@ -153,8 +156,9 @@ export const DialogTrigger: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ 
 export const useToast = () => {
   return {
     toast: ({ title, description, variant }: { title: string; description: string; variant?: string }) => {
+      // Simple alert for demo purposes
+      alert(`${title}: ${description}`)
       console.log(`Toast: ${title} - ${description}`)
-      // In a real app, this would show an actual toast notification
     }
   }
 }
