@@ -2,84 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: hsl(240, 10%, 3.9%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5%, 64.9%);
-  --popover: hsl(240, 10%, 3.9%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(240, 3.7%, 15.9%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(240, 3.7%, 15.9%);
-  --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
-  --radius: 0.5rem;
-  
-  /* Financial Dashboard Colors */
-  --success: hsl(142, 76%, 36%);
-  --success-foreground: hsl(0, 0%, 98%);
-  --danger: hsl(0, 84%, 60%);
-  --danger-foreground: hsl(0, 0%, 98%);
-  --warning: hsl(43, 96%, 56%);
-  --warning-foreground: hsl(0, 0%, 0%);
-  --purple: hsl(262, 83%, 58%);
-  --purple-foreground: hsl(0, 0%, 98%);
-  --cyan: hsl(188, 94%, 42%);
-  --cyan-foreground: hsl(0, 0%, 98%);
-  
-  /* Gradient backgrounds */
-  --gradient-bg: linear-gradient(135deg, hsl(240, 10%, 3.9%) 0%, hsl(240, 5%, 8%) 100%);
-  --gradient-card: linear-gradient(145deg, hsl(240, 5%, 8%) 0%, hsl(240, 3.7%, 15.9%) 100%);
-  --gradient-primary: linear-gradient(135deg, hsl(207, 90%, 54%) 0%, hsl(262, 83%, 58%) 100%);
-  
-  /* Glass effect */
-  --glass-bg: rgba(30, 41, 59, 0.8);
-  
-  /* Shadow effects */
-  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-glow: 0 0 20px rgba(16, 185, 129, 0.3);
-  --shadow-glow-red: 0 0 20px rgba(239, 68, 68, 0.3);
-  --shadow-glow-primary: 0 0 20px rgba(53, 126, 221, 0.3);
-}
-
 @layer base {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+    --radius: 0.5rem;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    
+    /* Custom colors for financial data */
+    --success: 142 76% 36%;
+    --positive: 142 76% 36%;
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--chart-1)) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+
   * {
-    @apply border;
+    @apply border-border;
   }
 
   body {
-    @apply font-sans antialiased;
-    background: var(--gradient-bg);
-    color: hsl(var(--foreground));
-    min-height: 100vh;
+    @apply bg-background text-foreground;
   }
 }
 
-@layer components {
-  .gradient-bg {
-    background: var(--gradient-bg);
-  }
-  
-  .gradient-card {
-    background: var(--gradient-card);
-  }
-  
-  .gradient-primary {
+@layer utilities {
+  .bg-gradient-primary {
     background: var(--gradient-primary);
   }
   
-  .glass-effect {
-    backdrop-filter: blur(10px);
-    background: var(--glass-bg);
+  .bg-gradient-card {
+    background: var(--gradient-card);
   }
   
   .shadow-card {
@@ -90,141 +65,11 @@
     box-shadow: var(--shadow-glow);
   }
   
-  .shadow-glow-red {
-    box-shadow: var(--shadow-glow-red);
-  }
-  
-  .shadow-glow-primary {
-    box-shadow: var(--shadow-glow-primary);
-  }
-  
-  .trading-signal {
-    animation: pulse 2s infinite;
-  }
-  
-  .chart-container {
-    background: var(--gradient-card);
-  }
-}
-
-@layer utilities {
   .text-success {
     color: hsl(var(--success));
   }
   
-  .text-danger {
-    color: hsl(var(--danger));
+  .text-positive {
+    color: hsl(var(--positive));
   }
-  
-  .text-warning {
-    color: hsl(var(--warning));
-  }
-  
-  .text-purple {
-    color: hsl(var(--purple));
-  }
-  
-  .text-cyan {
-    color: hsl(var(--cyan));
-  }
-  
-  .bg-success {
-    background-color: hsl(var(--success));
-  }
-  
-  .bg-danger {
-    background-color: hsl(var(--danger));
-  }
-  
-  .bg-warning {
-    background-color: hsl(var(--warning));
-  }
-  
-  .bg-purple {
-    background-color: hsl(var(--purple));
-  }
-  
-  .bg-cyan {
-    background-color: hsl(var(--cyan));
-  }
-  
-  .border-success {
-    border-color: hsl(var(--success));
-  }
-  
-  .border-danger {
-    border-color: hsl(var(--danger));
-  }
-  
-  .border-warning {
-    border-color: hsl(var(--warning));
-  }
-  
-  .border-purple {
-    border-color: hsl(var(--purple));
-  }
-  
-  .border-cyan {
-    border-color: hsl(var(--cyan));
-  }
-}
-
-/* Custom animations */
-@keyframes pulse-subtle {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
-@keyframes slide-up {
-  0% {
-    transform: translateY(10px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fade-in {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
-}
-
-.animate-fade-in {
-  animation: fade-in 0.5s ease-out;
-}
-
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-}
-
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground));
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--accent-foreground));
 }
