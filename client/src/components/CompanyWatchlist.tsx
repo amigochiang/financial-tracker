@@ -26,6 +26,118 @@ interface CompanyWatchlistProps {
   onCompaniesChange: (companies: Company[]) => void;
 }
 
+interface FinancialDataFormProps {
+  company: Company | null;
+  onSave: (company: Company) => void;
+  onCancel: () => void;
+}
+
+const FinancialDataForm = ({ company, onSave, onCancel }: FinancialDataFormProps) => {
+  const [formData, setFormData] = useState({
+    cashReserves: company?.financials?.cashReserves || 0,
+    annualRevenue: company?.financials?.annualRevenue || 0,
+    annualProfit: company?.financials?.annualProfit || 0,
+    productAnnualRevenue: company?.financials?.productAnnualRevenue || 0,
+    annualGrossProfit: company?.financials?.annualGrossProfit || 0,
+  });
+
+  const handleSave = () => {
+    if (!company) return;
+    
+    const updatedCompany: Company = {
+      ...company,
+      financials: formData
+    };
+    
+    onSave(updatedCompany);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-3">
+        <div>
+          <Label htmlFor="cashReserves" className="text-sm font-medium text-foreground">
+            Cash Reserves (Millions USD)
+          </Label>
+          <Input
+            id="cashReserves"
+            type="number"
+            value={formData.cashReserves}
+            onChange={(e) => setFormData({...formData, cashReserves: Number(e.target.value)})}
+            placeholder="0"
+            className="mt-1"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="annualRevenue" className="text-sm font-medium text-foreground">
+            Annual Revenue (Millions USD)
+          </Label>
+          <Input
+            id="annualRevenue"
+            type="number"
+            value={formData.annualRevenue}
+            onChange={(e) => setFormData({...formData, annualRevenue: Number(e.target.value)})}
+            placeholder="0"
+            className="mt-1"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="annualProfit" className="text-sm font-medium text-foreground">
+            Annual Profit (Millions USD)
+          </Label>
+          <Input
+            id="annualProfit"
+            type="number"
+            value={formData.annualProfit}
+            onChange={(e) => setFormData({...formData, annualProfit: Number(e.target.value)})}
+            placeholder="0"
+            className="mt-1"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="productAnnualRevenue" className="text-sm font-medium text-foreground">
+            Product Annual Revenue (Millions USD)
+          </Label>
+          <Input
+            id="productAnnualRevenue"
+            type="number"
+            value={formData.productAnnualRevenue}
+            onChange={(e) => setFormData({...formData, productAnnualRevenue: Number(e.target.value)})}
+            placeholder="0"
+            className="mt-1"
+          />
+        </div>
+        
+        <div>
+          <Label htmlFor="annualGrossProfit" className="text-sm font-medium text-foreground">
+            Annual Gross Profit (Millions USD)
+          </Label>
+          <Input
+            id="annualGrossProfit"
+            type="number"
+            value={formData.annualGrossProfit}
+            onChange={(e) => setFormData({...formData, annualGrossProfit: Number(e.target.value)})}
+            placeholder="0"
+            className="mt-1"
+          />
+        </div>
+      </div>
+      
+      <div className="flex justify-end gap-2 pt-4">
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={handleSave} className="bg-gradient-primary">
+          Save Financial Data
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 export const CompanyWatchlist = ({ companies, onCompaniesChange }: CompanyWatchlistProps) => {
   const [newCompany, setNewCompany] = useState('');
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
@@ -209,112 +321,5 @@ export const CompanyWatchlist = ({ companies, onCompaniesChange }: CompanyWatchl
         </DialogContent>
       </Dialog>
     </Card>
-  );
-};
-
-interface FinancialDataFormProps {
-  company: Company | null;
-  onSave: (company: Company) => void;
-  onCancel: () => void;
-}
-
-const FinancialDataForm = ({ company, onSave, onCancel }: FinancialDataFormProps) => {
-  const [formData, setFormData] = useState({
-    cashReserves: company?.financials?.cashReserves || 0,
-    annualRevenue: company?.financials?.annualRevenue || 0,
-    annualProfit: company?.financials?.annualProfit || 0,
-    productAnnualRevenue: company?.financials?.productAnnualRevenue || 0,
-    annualGrossProfit: company?.financials?.annualGrossProfit || 0,
-  });
-
-  const handleSave = () => {
-    if (!company) return;
-    
-    const updatedCompany: Company = {
-      ...company,
-      financials: formData
-    };
-    
-    onSave(updatedCompany);
-  };
-
-  return (
-    <div className="space-y-4">
-      <div className="space-y-3">
-        <div className="space-y-2">
-          <Label htmlFor="cashReserves" className="text-sm font-medium">
-            Cash Reserves (millions USD)
-          </Label>
-          <Input
-            id="cashReserves"
-            type="number"
-            value={formData.cashReserves}
-            onChange={(e) => setFormData({...formData, cashReserves: Number(e.target.value)})}
-            className="bg-input border-border"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="annualRevenue" className="text-sm font-medium">
-            Annual Revenue (millions USD)
-          </Label>
-          <Input
-            id="annualRevenue"
-            type="number"
-            value={formData.annualRevenue}
-            onChange={(e) => setFormData({...formData, annualRevenue: Number(e.target.value)})}
-            className="bg-input border-border"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="annualProfit" className="text-sm font-medium">
-            Annual Profit (millions USD)
-          </Label>
-          <Input
-            id="annualProfit"
-            type="number"
-            value={formData.annualProfit}
-            onChange={(e) => setFormData({...formData, annualProfit: Number(e.target.value)})}
-            className="bg-input border-border"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="productAnnualRevenue" className="text-sm font-medium">
-            Product Annual Revenue (millions USD)
-          </Label>
-          <Input
-            id="productAnnualRevenue"
-            type="number"
-            value={formData.productAnnualRevenue}
-            onChange={(e) => setFormData({...formData, productAnnualRevenue: Number(e.target.value)})}
-            className="bg-input border-border"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="annualGrossProfit" className="text-sm font-medium">
-            Annual Gross Profit (millions USD)
-          </Label>
-          <Input
-            id="annualGrossProfit"
-            type="number"
-            value={formData.annualGrossProfit}
-            onChange={(e) => setFormData({...formData, annualGrossProfit: Number(e.target.value)})}
-            className="bg-input border-border"
-          />
-        </div>
-      </div>
-      
-      <div className="flex justify-end gap-2 pt-4">
-        <Button variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave} className="bg-gradient-primary">
-          Save Financial Data
-        </Button>
-      </div>
-    </div>
   );
 };
